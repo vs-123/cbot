@@ -33,6 +33,7 @@ struct cbot_t cbot = {
       { "add", "Add amount to a bank user", &bank_cmd_add, true },
       { "reg", "Register yourself into my banking system", &bank_cmd_reg, true },
       { "oreg", "Forcibly register someone into my banking system", &bank_cmd_oreg, true },
+      { "bal", "View your or someone else's balance", &bank_cmd_bal, true },
       NULL_CMD,
    },
 };
