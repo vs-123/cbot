@@ -129,10 +129,28 @@ cmd_help (struct cbot_t *cbot, const struct discord_message *event,
    char tmp_msg[512];
 
    bool is_master = (event->author->id == cbot->master_id);
-   sprintf (final_msg, "List of commands for <@!%llu>:\n", event->author->id);
+   sprintf (final_msg,
+            "List of commands for <@!%llu>.\n\n**Generic Commands:**\n",
+            event->author->id);
 
    struct cmd_t *cmd = NULL;
-   for (size_t i = 0; (cmd = &cbot->cmds[i])->run != NULL; i++)
+   for (size_t i = 0; (cmd = &cbot->generic_cmds[i])->run != NULL; i++)
+      {
+         bool should_user_see_cmd
+             = (is_master) || (!cmd->owner_only && !is_master);
+         if (should_user_see_cmd)
+            {
+               const char *master_only_notice
+                   = cmd->owner_only ? "-- **(master only)**" : "";
+               sprintf (tmp_msg, "- `%s` -- %s %s\n", cmd->name, cmd->desc,
+                        master_only_notice);
+               strcat (final_msg, tmp_msg);
+            }
+      }
+
+   sprintf (tmp_msg, "\n**Bank Commands:**\n");
+   strcat (final_msg, tmp_msg);
+   for (size_t i = 0; (cmd = &cbot->bank_cmds[i])->run != NULL; i++)
       {
          bool should_user_see_cmd
              = (is_master) || (!cmd->owner_only && !is_master);

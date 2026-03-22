@@ -14,7 +14,7 @@ cbot_on_ready (struct cbot_t *cbot, struct discord *client,
 {
    cbot_log ("LOGGED IN AS %s", event->user->username);
    cbot->bot_id = event->user->id;
-   cbot_load_bank_users(cbot);
+   cbot_load_bank_users (cbot);
 }
 
 void
@@ -41,7 +41,7 @@ cbot_on_message (struct cbot_t *cbot, const struct discord_message *event)
 }
 
 void
-run_cmd (struct cbot_t *cbot, const struct discord_message *event)
+run_generic_cmd (struct cbot_t *cbot, const struct discord_message *event)
 {
    cbot_log ("CMD RECEIVED");
 
@@ -51,28 +51,22 @@ run_cmd (struct cbot_t *cbot, const struct discord_message *event)
 
    cbot_log ("CMD SEARCH LOOP BEGIN");
 
-   for (size_t i = 0; cbot->cmds[i].run != NULL; i++)
+   struct cmd_t *cmd = NULL;
+   for (size_t i = 0; (cmd = &cbot->generic_cmds[i])->run != NULL; i++)
       {
-         struct cmd_t cmd         = cbot->cmds[i];
-         size_t cmd_len           = strlen (cmd.name);
+         size_t cmd_len           = strlen (cmd->name);
          const char *stripped_cmd = event->content + cbot->prefix_len;
 
-         if (strncmp (stripped_cmd, cbot->bank_prefix, cbot->bank_prefix_len) == 0)
-         {
-            cbot_log("BANK COMMAND DETECTED!");
-            return;
-         }
-
-         if (strncmp (stripped_cmd, cmd.name, cmd_len) == 0)
+         if (strncmp (stripped_cmd, cmd->name, cmd_len) == 0)
             {
                cbot_log ("CMD MATCHED");
-               if (cmd.owner_only && !is_run_by_master)
+               if (cmd->owner_only && !is_run_by_master)
                   {
                      was_run_by_unauthorised = true;
                      break;
                   }
 
-               cbot->cmds[i].run (cbot, event, cmd.name);
+               cbot->generic_cmds[i].run (cbot, event, cmd->name);
                return;
             }
       }
@@ -90,7 +84,7 @@ run_cmd (struct cbot_t *cbot, const struct discord_message *event)
 
    if (!is_valid_cmd)
       {
-         const char *msg = "Bad command.";
+         const char *msg = "Bad generic command.";
          discord_create_message (
              cbot->client, event->channel_id,
              &(struct discord_create_message){ .content = (char *)msg }, NULL);
@@ -98,3 +92,73 @@ run_cmd (struct cbot_t *cbot, const struct discord_message *event)
       }
 }
 
+void
+run_bank_cmd (struct cbot_t *cbot, const struct discord_message *event)
+{
+   cbot_log ("BANK CMD RECEIVED");
+
+   bool is_valid_cmd            = false;
+   bool was_run_by_unauthorised = false;
+   bool is_run_by_master        = (event->author->id == cbot->master_id);
+
+   cbot_log ("BANK CMD SEARCH LOOP BEGIN");
+
+   struct cmd_t *cmd = NULL;
+   for (size_t i = 0; (cmd = &cbot->bank_cmds[i])->run != NULL; i++)
+      {
+         size_t cmd_len = strlen (cmd->name);
+         const char *stripped_cmd
+             = event->content + cbot->prefix_len + cbot->bank_prefix_len;
+
+         if (strncmp (stripped_cmd, cmd->name, cmd_len) == 0)
+            {
+               cbot_log ("CMD MATCHED");
+               if (cmd->owner_only && !is_run_by_master)
+                  {
+                     was_run_by_unauthorised = true;
+                     break;
+                  }
+
+               cmd->run (cbot, event, cmd->name);
+               return;
+            }
+      }
+
+   if (was_run_by_unauthorised)
+      {
+         /* sudo reference lol */
+         const char *msg = "You are not my master.  This incident will "
+                           "be reported.";
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){ .content = (char *)msg }, NULL);
+         return;
+      }
+
+   if (!is_valid_cmd)
+      {
+         const char *msg = "Bad bank command.";
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){ .content = (char *)msg }, NULL);
+         return;
+      }
+}
+
+void
+run_cmd (struct cbot_t *cbot, const struct discord_message *event)
+{
+   if (strncmp (event->content, cbot->prefix, cbot->prefix_len) == 0)
+      {
+         if (strncmp (event->content + cbot->prefix_len, cbot->bank_prefix,
+                      cbot->bank_prefix_len)
+             == 0)
+            {
+               run_bank_cmd (cbot, event);
+            }
+         else
+            {
+               run_generic_cmd (cbot, event);
+            }
+      }
+}

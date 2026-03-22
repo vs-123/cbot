@@ -22,7 +22,9 @@ struct cbot_t
    const u64snowflake master_id;
    u64snowflake bot_id;
 
-   struct cmd_t *cmds;
+   struct cmd_t *generic_cmds;
+   struct cmd_t *bank_cmds;
+   
    uint64_t seed;
 };
 
@@ -32,17 +34,11 @@ void cbot_on_message (struct cbot_t *cbot, const struct discord_message *event);
 
 typedef void (*cmd_handler_t) (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 
-enum cmd_type_t {
-   CMD_GENERIC,
-   CMD_BANK,
-};
-
 struct cmd_t
 {
    char *name;
    char *desc;
    cmd_handler_t run;
-   enum cmd_type_t type;
    bool owner_only;
 };
 

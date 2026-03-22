@@ -67,6 +67,7 @@ add_executable(${PROJECT_NAME}
    src/main.c
 
    src/bank.c
+   src/bank_cmds.c
    src/cbot.c
    src/cmd_bf.c
    src/cmds.c
