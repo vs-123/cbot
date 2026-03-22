@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "discord.h"
 
@@ -12,6 +13,7 @@ struct cbot_t cbot = {
    .cmds       = (struct cmd_t[]){
       { "help", "View a list of all commands you can run", &cmd_help, false },
       { "die", "Shut me down", &cmd_die, true },
+      { "rand", "Generate a random number between two given numbers", &cmd_rand, false },
       NULL_CMD,
    },
 };
@@ -39,6 +41,7 @@ main (void)
 {
    struct discord *client = discord_config_init ("config.json");
    cbot.client            = client;
+   cbot.seed              = time (NULL);
 
    discord_add_intents (client, DISCORD_GATEWAY_MESSAGE_CONTENT);
    discord_set_on_ready (client, &on_ready);

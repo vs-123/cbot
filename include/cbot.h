@@ -16,6 +16,7 @@ struct cbot_t
    u64snowflake bot_id;
 
    struct cmd_t *cmds;
+   uint64_t seed;
 };
 
 void cbot_on_ready (struct cbot_t *cbot, struct discord *client, const struct discord_ready *event);

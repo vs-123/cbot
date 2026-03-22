@@ -90,3 +90,4 @@ run_cmd (struct cbot_t *cbot, const struct discord_message *event)
          return;
       }
 }
+
