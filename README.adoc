@@ -1,10 +1,37 @@
 :em: {sp}--{sp}
 :license: *GNU Affero General Public License version 3.0 or later*
 :license-link: https://www.gnu.org/licenses/agpl-3.0.en.html
+:concord-link: https://github.com/Cogmasters/concord
+:ystar-link: https://github.com/vs-123/ystar
+:bf-link: https://en.wikipedia.org/wiki/Brainfuck
 
 = CBOT
 
 A simple discord bot in C99.
+
+== FEATURES
+
+* *[DETERMINISTIC MEMORY FOOTPRINT]* {em} The application operates with an RSS profile ranging from *11.6MB* to *11.8MB*. Heap fragmentation is a non-issue here as I've opted for static struct initialisation, fixed-width types and stack-allocated string buffers to ensure the allocator stays out of the way. 
+
+* *[YSTAR PRNG]* {em} The bot utilises my custom link:{ystar-link}[ystar PRNG], which has been rigorously validated via *Wald-Wolfowitz Runs* and *Lag-1 Correlation* testing and more. Based on the tests, it has statistically sound randomness.
+
+* *[BF INTERPRETER]* {em} A native link:{bf-link}[BF] interpreter is implemented into the bot. It is immune to infinite loops and out-of-bounds errors as I've implemented a strict, large instruction cap. Thanks to the speed of C, the overhead of this mechanism is functionally invisible and execution remains effectively instantaneous.
+
+* *[BANK PERSISTENCE]* {em} No external DB engines were used. The banking system utilises a fundamentally inspectable flat-file architecture, stored as a plaintext file. The black box nature of binary blobs is avoided with this approach, although it is reasonably simple to switch to so in case it ever becomes a bottle neck.
+
+* *[ZERO RACE CONDITIONS]* {em} Race conditions related to bank persistence are mathematically impossible by design. This is due to the fact that the state is only committed (saved) when the `die` command is executed, which is restricted to the master ID. The master is the mutex. 
+
+* *[PEDANTIC C99 COMPLIANCE]* {em} This bot is written in pure *C99* and compiled with `-Wall -Wextra -Wpedantic`. No GNU extensions were used, zero compiler tricks, and zero third-party dependencies outside of the Discord wrapper library link:{concord-link}[concord]. 
+
+* *[EXTENSIBLE MODULAR DESIGN]* {em} The command dispatch is handled through a clean `cmd_t` registry. This allows for good readability and provides a great maintainability experience without the spaghetti found in usual bot logic.
+
+* *[HARDENED BANKING OPERATIONS]* {em} Banking operations that involve transaction of money undergoes rigorous runtime validation. This includes underflow protection, overflow protection, input sanitation and registration state checks where appropriate. The overhead caused by these runtime checks are practically nil, thanks to C's speed.
+
+* *[ECONOMIC THROTTLING]* {em} Certain banking commands such as `work` and `gamble` are equipped with cooldowns to prevent state exhaustion, cheating and quick earning via spamming.
+
+* *[SELF-DOCUMENTING]* {em} This bot features a `help` command. The help system is dynamically generated at runtime from the internal command dispatch table. Due to this style of implementation, adding functionality does not require you to  manually update string constants in five different files, you just define the logic and add a new entry to the table.
+
+* *[SELF-DOCUMENTING #2]* {em} Certain commands that require one or more arguments are equipped with usage feedback. In case when a user provides an invalid set of arguments or uses such command incorrectly, the bot prints the proper syntax. This feature was inspired from ordinary CLI utility tools.
 
 == LICENSE
 
