@@ -31,6 +31,8 @@ struct cbot_t cbot = {
    },
    .bank_cmds         = (struct cmd_t[]){
       { "add", "Add amount to a bank user", &bank_cmd_add, true },
+      { "reg", "Register yourself into my banking system", &bank_cmd_reg, true },
+      { "oreg", "Forcibly register someone into my banking system", &bank_cmd_oreg, true },
       NULL_CMD,
    },
 };
