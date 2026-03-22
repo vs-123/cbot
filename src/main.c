@@ -3,12 +3,14 @@
 #include "discord.h"
 
 #include "cbot.h"
+#include "cmds.h"
 
 struct cbot_t cbot = {
    .master_id  = 386862660483809280,
    .prefix     = "cb.",
    .prefix_len = 3,
    .cmds      = (struct cmd_t[]){
+      { "help", "View a list of all commands you can run", &cmd_help, false },
       NULL_CMD,
    },
 };

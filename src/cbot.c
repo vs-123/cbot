@@ -52,10 +52,11 @@ run_cmd (struct cbot_t *cbot, const struct discord_message *event)
 
    for (size_t i = 0; cbot->cmds[i].run != NULL; i++)
       {
-         struct cmd_t cmd = cbot->cmds[i];
-         size_t cmd_len   = strlen (cmd.name);
+         struct cmd_t cmd         = cbot->cmds[i];
+         size_t cmd_len           = strlen (cmd.name);
+         const char *stripped_cmd = event->content + cbot->prefix_len;
 
-         if (strncmp (event->content + 1, cmd.name, cmd_len) == 0)
+         if (strncmp (stripped_cmd, cmd.name, cmd_len) == 0)
             {
                cbot_log ("CMD MATCHED");
                if (cmd.owner_only && is_run_by_master)
