@@ -57,6 +57,12 @@ run_cmd (struct cbot_t *cbot, const struct discord_message *event)
          size_t cmd_len           = strlen (cmd.name);
          const char *stripped_cmd = event->content + cbot->prefix_len;
 
+         if (strncmp (stripped_cmd, cbot->bank_prefix, cbot->bank_prefix_len) == 0)
+         {
+            cbot_log("BANK COMMAND DETECTED!");
+            return;
+         }
+
          if (strncmp (stripped_cmd, cmd.name, cmd_len) == 0)
             {
                cbot_log ("CMD MATCHED");

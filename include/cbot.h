@@ -10,8 +10,11 @@ struct cmd_t;
 struct cbot_t
 {
    struct discord *client;
+
    char *prefix;
    short prefix_len;
+   char *bank_prefix;
+   short bank_prefix_len;
 
    struct bank_users_t bank_users;
    char *bank_save_filename;
@@ -29,11 +32,17 @@ void cbot_on_message (struct cbot_t *cbot, const struct discord_message *event);
 
 typedef void (*cmd_handler_t) (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 
+enum cmd_type_t {
+   CMD_GENERIC,
+   CMD_BANK,
+};
+
 struct cmd_t
 {
    char *name;
    char *desc;
    cmd_handler_t run;
+   enum cmd_type_t type;
    bool owner_only;
 };
 
