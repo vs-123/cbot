@@ -68,6 +68,7 @@ add_executable(${PROJECT_NAME}
    src/cbot.c
    src/cmds.c
    src/util.c
+   src/cmd_bf.c
 )
 add_dependencies(${PROJECT_NAME} concord_external)
 

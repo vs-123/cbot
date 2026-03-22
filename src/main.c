@@ -14,11 +14,12 @@ struct cbot_t cbot = {
    .prefix     = "cb.",
    .prefix_len = 3,
    .cmds       = (struct cmd_t[]){
+      { "bf", "Run brainfuck code", &cmd_bf, false },
       { "die", "Shut me down", &cmd_die, true },
       { "help", "View a list of all commands you can run", &cmd_help, false },
+      { "id", "View your or someone else's discord user ID", &cmd_id, false },
       { "rand", "Generate a random number between two given numbers", &cmd_rand, false },
       { "seed", "View the current seed of my PRNG", &cmd_seed, false },
-      { "id", "View your or someone else's discord user ID", &cmd_id, false },
       NULL_CMD,
    },
 };
