@@ -46,6 +46,61 @@ args_next_number (struct cmd_args_t *args, uint64_t *out)
    return 1;
 }
 
+int
+args_next_snowflake (struct cmd_args_t *args, uint64_t *out)
+{
+   while (*args->ptr && !isdigit ((unsigned char)*args->ptr))
+      {
+         args->ptr++;
+      }
+
+   if (!*args->ptr)
+      {
+         return 0;
+      }
+
+   char *end;
+   *out = strtoull (args->ptr, &end, 10);
+   if (args->ptr == end)
+      {
+         return 0;
+      }
+
+   args->ptr = end;
+   return 1;
+}
+
+int
+args_next_mention (struct cmd_args_t *args, uint64_t *out)
+{
+   while (*args->ptr && isspace (*args->ptr))
+      {
+         args->ptr++;
+      }
+
+   if (strncmp (args->ptr, "<@", 2) != 0)
+      {
+         return 0;
+      }
+
+   const char *start = args->ptr + 2;
+   if (*start == '!')
+      {
+         start++;
+      }
+
+   char *end;
+   *out = strtoull (start, &end, 10);
+
+   if (*end != '>')
+      {
+         return 0;
+      }
+
+   args->ptr = end + 1;
+   return 1;
+}
+
 /**********/
 /*  CMDS  */
 /**********/
@@ -93,6 +148,36 @@ cmd_die (struct cbot_t *cbot, const struct discord_message *event,
 
    curl_global_cleanup ();
    discord_shutdown (cbot->client);
+}
+
+void
+cmd_id (struct cbot_t *cbot, const struct discord_message *event,
+        const char *cmd)
+{
+   struct cmd_args_t args;
+   args_init (&args, event->content);
+   char msg[1024];
+   u64snowflake target_id;
+
+   if (!args_next_mention (&args, &target_id)
+       && !args_next_snowflake (&args, &target_id))
+      {
+         snprintf (msg, sizeof (msg), "Your user id is **%llu**\n",
+                   event->author->id);
+      }
+   else
+      {
+         snprintf (msg, sizeof (msg), "<@!%llu>'s user id is **%llu**\n",
+                   target_id, target_id);
+      }
+
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){
+           .content = msg,
+           .allowed_mentions
+           = &(struct discord_allowed_mention){ .parse = 0 } },
+       NULL);
 }
 
 void
