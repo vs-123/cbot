@@ -9,8 +9,9 @@ struct cbot_t cbot = {
    .master_id  = 386862660483809280,
    .prefix     = "cb.",
    .prefix_len = 3,
-   .cmds      = (struct cmd_t[]){
+   .cmds       = (struct cmd_t[]){
       { "help", "View a list of all commands you can run", &cmd_help, false },
+      { "die", "Shut me down", &cmd_die, true },
       NULL_CMD,
    },
 };

@@ -1,6 +1,7 @@
 #include "cmds.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "cbot.h"
 #include "discord.h"
@@ -33,4 +34,18 @@ cmd_help (struct cbot_t *cbot, const struct discord_message *event,
    discord_create_message (
        cbot->client, event->channel_id,
        &(struct discord_create_message){ .content = final_msg }, NULL);
+}
+
+void
+cmd_die (struct cbot_t *cbot, const struct discord_message *event,
+         const char *cmd)
+{
+   struct discord_ret_message ret = { .sync = DISCORD_SYNC_FLAG };
+
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = "Goodbye, master! X_X" }, &ret);
+
+   curl_global_cleanup ();
+   discord_shutdown (cbot->client);
 }

@@ -59,7 +59,7 @@ run_cmd (struct cbot_t *cbot, const struct discord_message *event)
          if (strncmp (stripped_cmd, cmd.name, cmd_len) == 0)
             {
                cbot_log ("CMD MATCHED");
-               if (cmd.owner_only && is_run_by_master)
+               if (cmd.owner_only && !is_run_by_master)
                   {
                      was_run_by_unauthorised = true;
                      break;
