@@ -24,6 +24,7 @@ int args_next_amount    (struct cmd_args_t *args, unsigned int *out);
 /**********/
 
 void cmd_bf   (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
+void cmd_calc (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void cmd_die  (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void cmd_help (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void cmd_id   (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);

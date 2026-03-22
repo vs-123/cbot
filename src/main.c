@@ -30,6 +30,7 @@ struct cbot_t cbot = {
       { "b.work", "Work for bank money", &bank_cmd_work, false },
       { "b.gamble", "Gamble with your bank money", &bank_cmd_gamble, false },
       { "bf", "Run brainfuck code", &cmd_bf, false },
+      { "calc", "Calculate/evaluate arithmetic expressions", &cmd_calc, false },
       { "die", "Shut me down", &cmd_die, true },
       { "help", "View a list of all commands you can run", &cmd_help, false },
       { "id", "View your or someone else's discord user ID", &cmd_id, false },
