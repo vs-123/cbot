@@ -74,6 +74,24 @@ args_next_amount (struct cmd_args_t *args, unsigned int *out)
    return 1;
 }
 
+/* FOR QSORT */
+int
+bank_users_cmp (const void *a, const void *b)
+{
+   const struct bank_user_t *user_a = (const struct bank_user_t *)a;
+   const struct bank_user_t *user_b = (const struct bank_user_t *)b;
+
+   if (user_b->balance > user_a->balance)
+      {
+         return 1;
+      }
+   if (user_b->balance < user_a->balance)
+      {
+         return -1;
+      }
+   return 0;
+}
+
 void
 bank_unregistered_msg (struct cbot_t *cbot, const struct discord_message *event,
                        const char *cmd)
@@ -208,6 +226,48 @@ print_usage:
    discord_create_message (
        cbot->client, event->channel_id,
        &(struct discord_create_message){ .content = (char *)usage }, NULL);
+}
+
+void
+bank_cmd_lb (struct cbot_t *cbot, const struct discord_message *event,
+             const char *cmd)
+{
+   if (cbot->bank_users.count == 0)
+      {
+         discord_create_message (cbot->client, event->channel_id,
+                                 &(struct discord_create_message){
+                                     .content = "No users in economy! :c" },
+                                 NULL);
+         return;
+      }
+
+   qsort (cbot->bank_users.elems, cbot->bank_users.count,
+          sizeof (struct bank_user_t), bank_users_cmp);
+
+   char response[4096] = "__**=== BANK LEADERBOARD ===**__\n";
+   char line[128];
+
+   size_t top_limit
+       = (cbot->bank_users.count > 10) ? 10 : cbot->bank_users.count;
+
+   for (size_t i = 0; i < top_limit; i++)
+      {
+         struct bank_user_t *u = &cbot->bank_users.elems[i];
+
+         snprintf (line, sizeof (line), "%zu. <@%llu> -- **%u.%02u**\n", i + 1,
+                   (unsigned long long)u->user_id, u->balance / 100,
+                   u->balance % 100);
+
+         strcat (response, line);
+      }
+
+   struct discord_allowed_mention mentions = { .parse = false };
+
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content          = response,
+                                         .allowed_mentions = &mentions },
+       NULL);
 }
 
 void
