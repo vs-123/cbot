@@ -65,10 +65,12 @@ file(COPY ${CMAKE_SOURCE_DIR}/config.json DESTINATION ${CMAKE_BINARY_DIR})
 
 add_executable(${PROJECT_NAME}
    src/main.c
+
+   src/bank.c
    src/cbot.c
+   src/cmd_bf.c
    src/cmds.c
    src/util.c
-   src/cmd_bf.c
 )
 add_dependencies(${PROJECT_NAME} concord_external)
 

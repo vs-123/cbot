@@ -116,6 +116,7 @@ cmd_die (struct cbot_t *cbot, const struct discord_message *event,
        &(struct discord_create_message){ .content = "Goodbye, master! X_X" },
        &ret);
 
+   cbot_save_bank_users (cbot);
    curl_global_cleanup ();
    discord_shutdown (cbot->client);
 }

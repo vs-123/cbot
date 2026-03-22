@@ -14,6 +14,7 @@ cbot_on_ready (struct cbot_t *cbot, struct discord *client,
 {
    cbot_log ("LOGGED IN AS %s", event->user->username);
    cbot->bot_id = event->user->id;
+   cbot_load_bank_users(cbot);
 }
 
 void

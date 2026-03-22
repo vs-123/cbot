@@ -3,6 +3,7 @@
 
 #include "discord.h"
 
+#include "bank.h"
 #include "cbot.h"
 #include "cmds.h"
 
@@ -10,10 +11,12 @@
 #include "ystar.h"
 
 struct cbot_t cbot = {
-   .master_id  = 386862660483809280,
-   .prefix     = "cb.",
-   .prefix_len = 3,
-   .cmds       = (struct cmd_t[]){
+   .master_id          = 386862660483809280,
+   .prefix             = "cb.",
+   .prefix_len         = 3,
+   .bank_users         = (struct bank_users_t){ 0 },
+   .bank_save_filename = "bank_users.txt",
+   .cmds               = (struct cmd_t[]){
       { "bf", "Run brainfuck code", &cmd_bf, false },
       { "die", "Shut me down", &cmd_die, true },
       { "help", "View a list of all commands you can run", &cmd_help, false },

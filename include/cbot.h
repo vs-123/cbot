@@ -2,6 +2,7 @@
 #define CBOT_H
 
 #include "discord.h"
+#include "bank.h"
 
 struct cbot_t;
 struct cmd_t;
@@ -11,6 +12,9 @@ struct cbot_t
    struct discord *client;
    char *prefix;
    short prefix_len;
+
+   struct bank_users_t bank_users;
+   char *bank_save_filename;
 
    const u64snowflake master_id;
    u64snowflake bot_id;
