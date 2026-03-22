@@ -107,7 +107,7 @@ args_next_mention (struct cmd_args_t *args, uint64_t *out)
 
 void
 cmd_die (struct cbot_t *cbot, const struct discord_message *event,
-         const char *cmd)
+         const char *_)
 {
    struct discord_ret_message ret = { .sync = DISCORD_SYNC_FLAG };
 
@@ -116,7 +116,7 @@ cmd_die (struct cbot_t *cbot, const struct discord_message *event,
        &(struct discord_create_message){ .content = "Goodbye, master! X_X" },
        &ret);
 
-   cbot_log("SHUTTING DOWN...");
+   cbot_log ("SHUTTING DOWN...");
    cbot_save_bank_users (cbot);
    curl_global_cleanup ();
    discord_shutdown (cbot->client);
@@ -124,15 +124,13 @@ cmd_die (struct cbot_t *cbot, const struct discord_message *event,
 
 void
 cmd_help (struct cbot_t *cbot, const struct discord_message *event,
-          const char *cmd_name)
+          const char *_)
 {
    char final_msg[4096];
    char tmp_msg[512];
 
    bool is_master = (event->author->id == cbot->master_id);
-   sprintf (final_msg,
-            "List of commands for <@!%llu>:\n",
-            event->author->id);
+   sprintf (final_msg, "List of commands for <@!%llu>:\n", event->author->id);
 
    struct cmd_t *cmd = NULL;
    for (size_t i = 0; (cmd = &cbot->cmds[i])->run != NULL; i++)
@@ -155,8 +153,7 @@ cmd_help (struct cbot_t *cbot, const struct discord_message *event,
 }
 
 void
-cmd_id (struct cbot_t *cbot, const struct discord_message *event,
-        const char *cmd)
+cmd_id (struct cbot_t *cbot, const struct discord_message *event, const char *_)
 {
    struct cmd_args_t args;
    args_init (&args, event->content);
@@ -252,7 +249,7 @@ print_usage:
 
 void
 cmd_seed (struct cbot_t *cbot, const struct discord_message *event,
-          const char *cmd)
+          const char *_)
 {
    char response[1024];
    snprintf (response, sizeof (response), "Current seed -- **%llu**",

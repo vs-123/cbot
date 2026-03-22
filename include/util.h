@@ -18,6 +18,22 @@
       }                                                                        \
    while (0);
 
+#define DREMOVE(vector, ptr)                                                   \
+   do                                                                          \
+      {                                                                        \
+         if ((vector).count > 0)                                               \
+            {                                                                  \
+               size_t _index = (ptr) - (vector).elems;                         \
+               if (_index < (vector).count - 1)                                \
+                  {                                                            \
+                     (vector).elems[_index]                                    \
+                         = (vector).elems[(vector).count - 1];                 \
+                  }                                                            \
+               (vector).count--;                                               \
+            }                                                                  \
+      }                                                                        \
+   while (0);
+
 void cbot_log(const char *fmt, ...);
 
 #endif /* UTIL_H */

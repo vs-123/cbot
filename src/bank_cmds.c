@@ -107,7 +107,7 @@ bank_unregistered_msg (struct cbot_t *cbot, const struct discord_message *event,
 
 void
 not_enough_money (struct cbot_t *cbot, const struct discord_message *event,
-                       const char *cmd)
+                  const char *cmd)
 {
    discord_create_message (cbot->client, event->channel_id,
                            &(struct discord_create_message){
@@ -455,6 +455,56 @@ print_usage:
 }
 
 void
+bank_cmd_boot (struct cbot_t *cbot, const struct discord_message *event,
+               const char *cmd)
+{
+   char usage[128];
+   snprintf (usage, sizeof (usage), "**[USAGE]**\n```\n%s <snowflake>\n```\n",
+             cmd);
+
+   struct cmd_args_t args;
+   args_init (&args, event->content);
+   u64snowflake target_id;
+
+   if (!args_next_mention (&args, &target_id)
+       && !args_next_snowflake (&args, &target_id))
+      {
+         goto print_usage;
+      }
+
+   struct bank_user_t *user = cbot_search_bank_user (cbot, target_id);
+   if (user == NULL)
+      {
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){
+                 .content = "Master, user is not registered!!" },
+             NULL);
+         return;
+      }
+
+   DREMOVE (cbot->bank_users, user);
+
+   char response[128];
+   snprintf (response, sizeof (response),
+             "Master, <@!%llu> was booted successfully!", target_id);
+
+   struct discord_allowed_mention mentions = { .parse = false };
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content          = response,
+                                         .allowed_mentions = &mentions },
+       NULL);
+
+   return;
+
+print_usage:
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = (char *)usage }, NULL);
+}
+
+void
 bank_cmd_work (struct cbot_t *cbot, const struct discord_message *event,
                const char *cmd)
 {
@@ -570,6 +620,8 @@ bank_cmd_gamble (struct cbot_t *cbot, const struct discord_message *event,
        = (int)ystar_between (&cbot->seed, amount / 8 - 1, amount / 4 - 1);
    char response[256];
 
+   struct bank_user_t *bot_user = cbot_search_bank_user (cbot, cbot->bot_id);
+
    if (has_won)
       {
          user->balance += amount - stolen_amount;
@@ -580,9 +632,6 @@ bank_cmd_gamble (struct cbot_t *cbot, const struct discord_message *event,
                    stolen_amount / 100, stolen_amount % 100);
 
          /* add the stolen amount to bot's own bank account if it has one */
-         struct bank_user_t *bot_user
-             = cbot_search_bank_user (cbot, cbot->bot_id);
-
          if (bot_user)
             {
                bot_user->balance += stolen_amount;
@@ -593,8 +642,14 @@ bank_cmd_gamble (struct cbot_t *cbot, const struct discord_message *event,
          user->balance -= amount;
          snprintf (response, sizeof (response),
                    "<@!%llu> gambled and **LOST %u.%02u** currency D:\n-# "
-                   "and I couldn't steal anything </3",
+                   "It's all mine now >:]",
                    event->author->id, amount / 100, amount % 100);
+
+         /* add the lost amount to bot's own bank account if it has one */
+         if (bot_user)
+            {
+               bot_user->balance += amount;
+            }
       }
 
    discord_create_message (cbot->client, event->channel_id,

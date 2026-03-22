@@ -20,6 +20,7 @@ struct cbot_t cbot = {
    .bank_save_filename = "bank_users.txt",
    .cmds       = (struct cmd_t[]){
       { "b.add", "Add amount to a bank user", &bank_cmd_add, true },
+      { "b.boot", "Boot a user from my banking system", &bank_cmd_boot, true },
       { "b.bal", "View your or someone else's balance", &bank_cmd_bal, false },
       { "b.lb", "View leaderboard of top 10 bank users according to bank balance", &bank_cmd_lb, true },
       { "b.oreg", "Forcibly register someone into my banking system", &bank_cmd_oreg, true },
