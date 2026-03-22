@@ -92,4 +92,4 @@ target_link_libraries(${PROJECT_NAME}
    m
 )
 
-target_compile_options(${PROJECT_NAME} PRIVATE -g)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)

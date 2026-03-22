@@ -135,7 +135,7 @@ cmd_help (struct cbot_t *cbot, const struct discord_message *event,
             event->author->id);
 
    struct cmd_t *cmd = NULL;
-   for (size_t i = 0; (cmd = &cbot->generic_cmds[i])->run != NULL; i++)
+   for (size_t i = 0; (cmd = &cbot->cmds[i])->run != NULL; i++)
       {
          bool should_user_see_cmd
              = (is_master) || (!cmd->owner_only && !is_master);

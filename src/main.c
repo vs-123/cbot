@@ -15,12 +15,10 @@ struct cbot_t cbot = {
 
    .prefix             = "cb.",
    .prefix_len         = 3,
-   .bank_prefix        = "b.",
-   .bank_prefix_len    = 2,
 
    .bank_users         = (struct bank_users_t){ 0 },
    .bank_save_filename = "bank_users.txt",
-   .generic_cmds               = (struct cmd_t[]){
+   .cmds       = (struct cmd_t[]){
       { "b.add", "Add amount to a bank user", &bank_cmd_add, true },
       { "b.bal", "View your or someone else's balance", &bank_cmd_bal, false },
       { "b.lb", "View leaderboard of top 10 bank users according to bank balance", &bank_cmd_lb, true },

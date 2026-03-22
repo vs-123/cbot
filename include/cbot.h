@@ -13,8 +13,6 @@ struct cbot_t
 
    char *prefix;
    short prefix_len;
-   char *bank_prefix;
-   short bank_prefix_len;
 
    struct bank_users_t bank_users;
    char *bank_save_filename;
@@ -22,7 +20,7 @@ struct cbot_t
    const u64snowflake master_id;
    u64snowflake bot_id;
 
-   struct cmd_t *generic_cmds;
+   struct cmd_t *cmds;
    struct cmd_t *bank_cmds;
    
    uint64_t seed;
