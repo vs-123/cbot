@@ -1,5 +1,5 @@
 :em: {sp}--{sp}
-:license: *GNU Affero General Public License version 3.0 or later*
+:license: GNU Affero General Public License version 3.0 or later
 :license-link: https://www.gnu.org/licenses/agpl-3.0.en.html
 :concord-link: https://github.com/Cogmasters/concord
 :ystar-link: https://github.com/vs-123/ystar
@@ -7,7 +7,9 @@
 
 = CBOT
 
-A simple discord bot in C99.
+*cbot* is a discord bot written in pure C99 designed with an emphasis on deterministic performance and architectural simplicity. The codebase strongly adheres to `-Wpedantic` standards and utilises a modular command dispatch system that ensures maintainability without external dependencies beyond the core API wrapper. Key technical highlights include a manual memory management strategy that maintains a maximum resident set size between `11.6MB` to `11.8MB`, a native link:{bf-link}[BF] interpreter that is immune to infinite loops and memory exhaustion, and a simple banking system with persistence.
+
+The bot implements a flat-file banking architecture for transparent state persistence. This aids in avoiding the overhead and black box nature of traditional database engines. Security is handled with rigorous runtime validation against integer overflows and underflows whilst keeping race conditions related to banking persistence structurally eliminated. This elimination is achieved as a result of the fact that bank state is stored only when the bot is shutdown via command, and the command is restricted to the master of the bot. Effectively, the master _is_ the mutex.
 
 == FEATURES
 
@@ -33,9 +35,13 @@ A simple discord bot in C99.
 
 * *[SELF-DOCUMENTING #2]* {em} Certain commands that require one or more arguments are equipped with usage feedback. In case when a user provides an invalid set of arguments or uses such command incorrectly, the bot prints the proper syntax. This feature was inspired from ordinary CLI utility tools.
 
+== MORE INFORMATION
+
+This project wasn't really created to compete with existing discord bots, rather it was created as a fun project that gives me an excuse to evaluate the suitability of C for writing discord bots. So far as per my personal experience, the development process has proven that C is remarkably pleasant for writing discord bots. In my opinion this level of stability and efficiency is not achieved merely by the language itself (although that counts), rather I believe that it is achieved by being disciplined about writing code and maintaining a clean, manual approach to system resources.
+
 == LICENSE
 
-This project is licensed under the {license}.
+This project is licensed under the *{license}*.
 
 *NO WARRANTY PROVIDED*
 
