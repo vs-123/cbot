@@ -41,5 +41,6 @@ void bank_cmd_oreg      (struct cbot_t *cbot, const struct discord_message *even
 void bank_cmd_reg       (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void bank_cmd_sub       (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void bank_cmd_transfer  (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
+void bank_cmd_work      (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 
 #endif /* CMDS_H */

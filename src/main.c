@@ -37,6 +37,7 @@ struct cbot_t cbot = {
       { "oreg", "Forcibly register someone into my banking system", &bank_cmd_oreg, true },
       { "reg", "Register yourself into my banking system", &bank_cmd_reg, false },
       { "transfer", "Transfer your money to someone else", &bank_cmd_transfer, false },
+      { "work", "Work for money", &bank_cmd_work, false },
       NULL_CMD,
    },
 };

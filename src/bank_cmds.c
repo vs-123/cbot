@@ -1,6 +1,7 @@
 #include "cmds.h"
 
 #include "discord.h"
+#include "ystar.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -451,4 +452,49 @@ print_usage:
    discord_create_message (
        cbot->client, event->channel_id,
        &(struct discord_create_message){ .content = (char *)usage }, NULL);
+}
+
+void
+bank_cmd_work (struct cbot_t *cbot, const struct discord_message *event,
+               const char *cmd)
+{
+   struct bank_user_t *u = cbot_search_bank_user (cbot, event->author->id);
+
+   if (!u)
+      {
+         bank_unregistered_msg (cbot, event, cmd);
+         return;
+      }
+
+   time_t now = time (NULL);
+
+   if (now < u->next_work_time)
+      {
+         char wait_msg[128];
+         short wait_time = (short)(u->next_work_time - now);
+         snprintf (wait_msg, sizeof (wait_msg),
+                   "Hey <@!%llu>, you're too tired to work! Wait for **%hd** "
+                   "more seconds. 🛑",
+                   event->author->id, wait_time);
+
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){ .content = wait_msg }, NULL);
+         return;
+      }
+
+   uint32_t reward = ystar_between (&cbot->seed, 525, 3500);
+   u->balance += reward;
+
+   uint32_t cooldown = ystar_between (&cbot->seed, 3, 6);
+   u->next_work_time = now + (time_t)cooldown;
+
+   char response[256];
+   snprintf (response, sizeof (response),
+             "<@!%llu> did some work and earned **%u.%02u**! 💰",
+             event->author->id, reward / 100, reward % 100);
+
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = response }, NULL);
 }

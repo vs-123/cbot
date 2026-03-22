@@ -12,6 +12,7 @@ struct bank_user_t
 {
    u64snowflake user_id;
    unsigned int balance;
+   time_t next_work_time;
 };
 
 #ifndef NULL_BANK_USER
