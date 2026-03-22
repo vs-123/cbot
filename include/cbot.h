@@ -1,8 +1,7 @@
 #ifndef CBOT_H
 #define CBOT_H
 
-#include "concord/gencodecs/discord_codecs.h"
-#include "concord/include/discord.h"
+#include "discord.h"
 
 struct cbot_t;
 struct cmd_t;
@@ -11,6 +10,7 @@ struct cbot_t
 {
    struct discord *client;
    char *prefix;
+   short prefix_len;
 
    const u64snowflake master_id;
    u64snowflake bot_id;
@@ -31,5 +31,10 @@ struct cmd_t
    cmd_handler_t run;
    bool owner_only;
 };
+
+#ifndef NULL_CMD
+#define NULL_CMD                                                                                                                \
+   (struct cmd_t) { "NULL", "NULL", NULL, true }
+#endif /* NULL_CMD */
 
 #endif /* CBOT_H */

@@ -1,8 +1,53 @@
 #include <stdio.h>
 
+#include "discord.h"
+
+#include "cbot.h"
+
+struct cbot_t cbot = {
+   .master_id  = 386862660483809280,
+   .prefix     = "cb.",
+   .prefix_len = 3,
+   .cmds      = (struct cmd_t[]){
+      NULL_CMD,
+   },
+};
+
+void
+on_ready (struct discord *client, const struct discord_ready *event)
+{
+   cbot_on_ready (&cbot, client, event);
+}
+
+void
+on_message (struct discord *client, const struct discord_message *event)
+{
+   cbot_on_message (&cbot, event);
+}
+
+void
+on_interaction (struct discord *client, const struct discord_interaction *event)
+{
+   cbot_on_interaction (&cbot, event);
+}
+
 int
 main (void)
 {
-   printf ("Hello, World!\n");
+   struct discord *client = discord_config_init ("config.json");
+   cbot.client            = client;
+
+   discord_add_intents (client, DISCORD_GATEWAY_MESSAGE_CONTENT);
+   discord_set_on_ready (client, &on_ready);
+   discord_set_on_message_create (client, &on_message);
+   discord_set_on_interaction_create (client, &on_interaction);
+
+   discord_run (client);
+
+   if (client != NULL)
+      {
+         discord_cleanup (client);
+      }
+
    return 0;
 }
