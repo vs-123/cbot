@@ -106,7 +106,7 @@ bank_unregistered_msg (struct cbot_t *cbot, const struct discord_message *event,
 }
 
 void
-bank_not_enough_money (struct cbot_t *cbot, const struct discord_message *event,
+not_enough_money (struct cbot_t *cbot, const struct discord_message *event,
                        const char *cmd)
 {
    discord_create_message (cbot->client, event->channel_id,
@@ -428,7 +428,7 @@ bank_cmd_transfer (struct cbot_t *cbot, const struct discord_message *event,
 
    if (sender->balance < amount)
       {
-         bank_not_enough_money (cbot, event, cmd);
+         not_enough_money (cbot, event, cmd);
          return;
       }
 
@@ -483,7 +483,7 @@ bank_cmd_work (struct cbot_t *cbot, const struct discord_message *event,
          return;
       }
 
-   uint32_t reward = ystar_between (&cbot->seed, 525, 3500);
+   uint32_t reward = ystar_between (&cbot->seed, 925, 3500);
    u->balance += reward;
 
    uint32_t cooldown = ystar_between (&cbot->seed, 3, 6);
@@ -497,4 +497,115 @@ bank_cmd_work (struct cbot_t *cbot, const struct discord_message *event,
    discord_create_message (
        cbot->client, event->channel_id,
        &(struct discord_create_message){ .content = response }, NULL);
+}
+
+void
+bank_cmd_gamble (struct cbot_t *cbot, const struct discord_message *event,
+                 const char *cmd)
+{
+   char usage[128];
+   snprintf (usage, sizeof (usage), "**[USAGE]**\n```\n%s <amount>\n```\n",
+             cmd);
+
+   const int MINIMUM_GAMBLING_AMOUNT = 2000;
+   struct cmd_args_t args;
+   args_init (&args, event->content);
+   unsigned int amount;
+
+   if (!args_next_amount (&args, &amount))
+      {
+         goto print_usage;
+      }
+
+   if (amount < MINIMUM_GAMBLING_AMOUNT)
+      {
+         char response[128];
+         snprintf (
+             response, sizeof (response),
+             "Hey, <@!%llu>! You can't gamble less than **%u.%02u**. Are you "
+             "scared? (¬‿¬)",
+             event->author->id, MINIMUM_GAMBLING_AMOUNT / 100,
+             MINIMUM_GAMBLING_AMOUNT % 100);
+
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){ .content = response }, NULL);
+         return;
+      }
+
+   struct bank_user_t *user = cbot_search_bank_user (cbot, event->author->id);
+   if (!user)
+      {
+         bank_unregistered_msg (cbot, event, cmd);
+      }
+
+   if (user->balance < amount)
+      {
+         not_enough_money (cbot, event, cmd);
+         return;
+      }
+
+   time_t now = time (NULL);
+   if (now < user->next_gamble_time)
+      {
+         char wait_msg[128];
+         long long wait_time = (long long)(user->next_gamble_time - now);
+         snprintf (wait_msg, sizeof (wait_msg),
+                   "Hey <@!%llu>, you're too tired to gamble! Wait for "
+                   "**%lld** more seconds. 🛑",
+                   event->author->id, wait_time);
+
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){ .content = wait_msg }, NULL);
+         return;
+      }
+
+   uint32_t cooldown      = ystar_between (&cbot->seed, 4, 8);
+   user->next_gamble_time = now + (time_t)cooldown;
+
+   int chance   = (int)ystar_between (&cbot->seed, 0, 2);
+   bool has_won = (chance != 1); /* 2/3 chance of winning */
+   int stolen_amount
+       = (int)ystar_between (&cbot->seed, amount / 8 - 1, amount / 4 - 1);
+   char response[256];
+
+   if (has_won)
+      {
+         user->balance += amount - stolen_amount;
+         snprintf (response, sizeof (response),
+                   "<@!%llu> gambled and **WON %u.%02u** currency :O\n-# and "
+                   "I stole %u.%02u from it hehe~",
+                   event->author->id, amount / 100, amount % 100,
+                   stolen_amount / 100, stolen_amount % 100);
+
+         /* add the stolen amount to bot's own bank account if it has one */
+         struct bank_user_t *bot_user
+             = cbot_search_bank_user (cbot, cbot->bot_id);
+
+         if (bot_user)
+            {
+               bot_user->balance += stolen_amount;
+            }
+      }
+   else
+      {
+         user->balance -= amount;
+         snprintf (response, sizeof (response),
+                   "<@!%llu> gambled and **LOST %u.%02u** currency D:\n-# "
+                   "and I couldn't steal anything </3",
+                   event->author->id, amount / 100, amount % 100);
+      }
+
+   discord_create_message (cbot->client, event->channel_id,
+                           &(struct discord_create_message){
+                               .content = response,
+                           },
+                           NULL);
+   return;
+
+print_usage:
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = (char *)usage }, NULL);
 }

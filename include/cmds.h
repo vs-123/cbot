@@ -37,6 +37,7 @@ void cmd_seed (struct cbot_t *cbot, const struct discord_message *event, const c
 void bank_cmd_add       (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void bank_cmd_bal       (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void bank_cmd_lb        (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
+void bank_cmd_gamble    (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void bank_cmd_oreg      (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void bank_cmd_reg       (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
 void bank_cmd_sub       (struct cbot_t *cbot, const struct discord_message *event, const char *cmd);
