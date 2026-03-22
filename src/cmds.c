@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "cbot.h"
+#include "channel.h"
 #include "discord.h"
 #include "util.h"
 #include "ystar.h"
@@ -158,4 +159,17 @@ print_usage:
    discord_create_message (
        cbot->client, event->channel_id,
        &(struct discord_create_message){ .content = (char *)usage }, NULL);
+}
+
+void
+cmd_seed (struct cbot_t *cbot, const struct discord_message *event,
+          const char *cmd)
+{
+   char response[1024];
+   snprintf (response, sizeof (response), "Current seed -- **%llu**",
+             cbot->seed);
+
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = response }, NULL);
 }
