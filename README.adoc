@@ -1,0 +1,15 @@
+:em: {sp}--{sp}
+:license: *GNU Affero General Public License version 3.0 or later*
+:license-link: https://www.gnu.org/licenses/agpl-3.0.en.html
+
+= CBOT
+
+A simple discord bot in C99.
+
+== LICENSE
+
+This project is licensed under the {license}.
+
+*NO WARRANTY PROVIDED*
+
+For more information, see `LICENSE` file or visit {license-link}.
