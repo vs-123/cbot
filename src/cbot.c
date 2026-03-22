@@ -148,17 +148,51 @@ run_bank_cmd (struct cbot_t *cbot, const struct discord_message *event)
 void
 run_cmd (struct cbot_t *cbot, const struct discord_message *event)
 {
-   if (strncmp (event->content, cbot->prefix, cbot->prefix_len) == 0)
+   cbot_log ("CMD RECEIVED");
+
+   bool is_valid_cmd            = false;
+   bool was_run_by_unauthorised = false;
+   bool is_run_by_master        = (event->author->id == cbot->master_id);
+
+   cbot_log ("CMD SEARCH LOOP BEGIN");
+
+   struct cmd_t *cmd = NULL;
+   for (size_t i = 0; (cmd = &cbot->generic_cmds[i])->run != NULL; i++)
       {
-         if (strncmp (event->content + cbot->prefix_len, cbot->bank_prefix,
-                      cbot->bank_prefix_len)
-             == 0)
+         size_t cmd_len           = strlen (cmd->name);
+         const char *stripped_cmd = event->content + cbot->prefix_len;
+
+         if (strncmp (stripped_cmd, cmd->name, cmd_len) == 0)
             {
-               run_bank_cmd (cbot, event);
+               cbot_log ("CMD MATCHED");
+               if (cmd->owner_only && !is_run_by_master)
+                  {
+                     was_run_by_unauthorised = true;
+                     break;
+                  }
+
+               cbot->generic_cmds[i].run (cbot, event, cmd->name);
+               return;
             }
-         else
-            {
-               run_generic_cmd (cbot, event);
-            }
+      }
+
+   if (was_run_by_unauthorised)
+      {
+         /* sudo reference lol */
+         const char *msg = "You are not my master.  This incident will "
+                           "be reported.";
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){ .content = (char *)msg }, NULL);
+         return;
+      }
+
+   if (!is_valid_cmd)
+      {
+         const char *msg = "Bad generic command.";
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){ .content = (char *)msg }, NULL);
+         return;
       }
 }
