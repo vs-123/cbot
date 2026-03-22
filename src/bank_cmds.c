@@ -75,8 +75,8 @@ args_next_amount (struct cmd_args_t *args, unsigned int *out)
 }
 
 void
-bank_unregistered_msg (struct cbot_t *cbot,
-                           const struct discord_message *event, const char *cmd)
+bank_unregistered_msg (struct cbot_t *cbot, const struct discord_message *event,
+                       const char *cmd)
 {
    char response[1024];
    sprintf (response, "Hey <@!%llu>, you're not registered!",
@@ -88,7 +88,7 @@ bank_unregistered_msg (struct cbot_t *cbot,
 
 void
 bank_not_enough_money (struct cbot_t *cbot, const struct discord_message *event,
-                      const char *cmd)
+                       const char *cmd)
 {
    discord_create_message (cbot->client, event->channel_id,
                            &(struct discord_create_message){
@@ -156,6 +156,54 @@ bank_cmd_add (struct cbot_t *cbot, const struct discord_message *event,
        &(struct discord_create_message){ .content = "Added!" }, NULL);
 
    return;
+print_usage:
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = (char *)usage }, NULL);
+}
+
+void
+bank_cmd_sub (struct cbot_t *cbot, const struct discord_message *event,
+              const char *cmd)
+{
+   char usage[128];
+   snprintf (usage, sizeof (usage),
+             "**[USAGE]**\n```\n%s <snowflake> <amount>\n```\n", cmd);
+
+   struct cmd_args_t args;
+   args_init (&args, event->content);
+   u64snowflake snowflake;
+   unsigned int amount;
+
+   if (!args_next_mention (&args, &snowflake)
+       && !args_next_snowflake (&args, &snowflake))
+      {
+         goto print_usage;
+      }
+
+   if (!args_next_amount (&args, &amount))
+      {
+         goto print_usage;
+      }
+
+   struct bank_user_t *user = cbot_search_bank_user (cbot, snowflake);
+   if (user == NULL)
+      {
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){
+                 .content = "Master, user is not registered!!" },
+             NULL);
+         return;
+      }
+
+   user->balance = (amount >= user->balance) ? 0 : user->balance - amount;
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = "Subtracted >:]" }, NULL);
+
+   return;
+
 print_usage:
    discord_create_message (
        cbot->client, event->channel_id,
@@ -334,7 +382,8 @@ bank_cmd_transfer (struct cbot_t *cbot, const struct discord_message *event,
        cbot->client, event->channel_id,
        &(struct discord_create_message){
            .content          = response,
-           .allowed_mentions = &(struct discord_allowed_mention){ 0 } },
+           .allowed_mentions = &(struct discord_allowed_mention){ 0 },
+       },
        NULL);
    return;
 
