@@ -1,11 +1,13 @@
 #include "cmds.h"
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "cbot.h"
 #include "discord.h"
+#include "util.h"
+#include "ystar.h"
 
 /*************/
 /*  HELPERS  */
@@ -105,10 +107,52 @@ cmd_rand (struct cbot_t *cbot, const struct discord_message *event,
    uint64_t min;
    uint64_t max;
 
-   if (!args_next_number (&args, &min) && !args_next_number (&args, &max))
+   if (!args_next_number (&args, &min) || !args_next_number (&args, &max))
       {
          goto print_usage;
       }
+
+   if (min == max)
+      {
+         discord_create_message (cbot->client, event->channel_id,
+                                 &(struct discord_create_message){
+                                     .content = "What did you expect? (¬_¬)" },
+                                 NULL);
+         return;
+      }
+
+   if (min > max)
+      {
+         discord_create_message (
+             cbot->client, event->channel_id,
+             &(struct discord_create_message){
+                 .content = "`<min>` should be less than `<max>` >:(" },
+             NULL);
+         return;
+      }
+
+   if (min >= UINT32_MAX || max >= UINT32_MAX)
+      {
+         discord_create_message (cbot->client, event->channel_id,
+                                 &(struct discord_create_message){
+                                     .content = "Try with smaller number(s)" },
+                                 NULL);
+         return;
+      }
+
+   cbot_log ("rand -- min : %zu, max : %zu", min, max);
+
+   uint32_t num = ystar_between (&cbot->seed, min, max);
+
+   char response[512];
+   const char *fmt = "## %u\n";
+   snprintf (response, sizeof (response), fmt, num);
+
+   discord_create_message (
+       cbot->client, event->channel_id,
+       &(struct discord_create_message){ .content = response }, NULL);
+
+   return;
 
 print_usage:
    discord_create_message (

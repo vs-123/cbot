@@ -6,6 +6,9 @@
 #include "cbot.h"
 #include "cmds.h"
 
+#define YSTAR_IMPLEMENTATION
+#include "ystar.h"
+
 struct cbot_t cbot = {
    .master_id  = 386862660483809280,
    .prefix     = "cb.",
