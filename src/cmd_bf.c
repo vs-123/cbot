@@ -9,7 +9,7 @@
 #include "util.h"
 
 #define MEMORY_TAPE      30000
-#define MAX_INSTRUCTIONS 100000
+#define MAX_INSTRUCTIONS 4096
 #define BF_OUTPUT_SIZE   4096
 
 typedef enum
@@ -30,8 +30,13 @@ run_bf (const char *bf, char *output, size_t out_max)
          return BF_ERR_NONE;
       }
 
-   int *jump_table = (int *)malloc (sizeof (int) * len);
-   int *stack      = (int *)malloc (sizeof (int) * len);
+   if (memchr (bf, '.', len) == NULL)
+      {
+         return BF_ERR_NONE;
+      }
+
+   int *jump_table = malloc (sizeof (int) * len);
+   int *stack      = malloc (sizeof (int) * len);
    if (!jump_table || !stack)
       {
          free (jump_table);
@@ -55,17 +60,20 @@ run_bf (const char *bf, char *output, size_t out_max)
                      free (jump_table);
                      return BF_ERR_BAD_LOOP;
                   }
+
                int open_idx         = stack[--stack_ptr];
                jump_table[open_idx] = i;
                jump_table[i]        = open_idx;
             }
       }
+
    if (stack_ptr > 0)
       {
          free (stack);
          free (jump_table);
          return BF_ERR_BAD_LOOP;
       }
+
    free (stack);
 
    unsigned char tape[MEMORY_TAPE] = { 0 };
@@ -144,7 +152,7 @@ run_bf (const char *bf, char *output, size_t out_max)
 
 void
 cmd_bf (struct cbot_t *cbot, const struct discord_message *event,
-        const char *cmd)
+        const char *_)
 {
    const char *bf_code = event->content;
    char response[5120] = { 0 };
@@ -197,7 +205,6 @@ cmd_bf (struct cbot_t *cbot, const struct discord_message *event,
       case BF_ERR_OUT_OF_BOUNDS:
          snprintf (response, sizeof (response),
                    "**[ERROR]**\n Nice try, but that's not gonna work (¬_¬)");
-
          break;
       }
 
