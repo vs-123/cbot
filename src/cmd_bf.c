@@ -21,6 +21,11 @@ typedef enum
    BF_ERR_NONE,
 } bf_error_t;
 
+typedef enum
+{
+   IDIOM_ZERO_LOOP = -1,
+} idiom_t;
+
 bf_error_t
 run_bf (const char *bf, char *output, size_t out_max)
 {
@@ -50,6 +55,14 @@ run_bf (const char *bf, char *output, size_t out_max)
          jump_table[i] = -1;
          if (bf[i] == '[')
             {
+               if (i + 2 < (int)len && (bf[i + 1] == '-' || bf[i + 1] == '+')
+                   && bf[i + 2] == ']')
+                  {
+                     jump_table[i]     = IDIOM_ZERO_LOOP;
+                     jump_table[i + 2] = i;
+                     i += 2;
+                     continue;
+                  }
                stack[stack_ptr++] = i;
             }
          else if (bf[i] == ']')
@@ -129,7 +142,12 @@ run_bf (const char *bf, char *output, size_t out_max)
                   }
                break;
             case '[':
-               if (*ptr == 0)
+               if (jump_table[i] == IDIOM_ZERO_LOOP)
+                  {
+                     *ptr = 0;
+                     i += 2;
+                  }
+               else if (*ptr == 0)
                   {
                      i = jump_table[i];
                   }
@@ -151,8 +169,7 @@ run_bf (const char *bf, char *output, size_t out_max)
 }
 
 void
-cmd_bf (struct cbot_t *cbot, const struct discord_message *event,
-        const char *_)
+cmd_bf (struct cbot_t *cbot, const struct discord_message *event, const char *_)
 {
    const char *bf_code = event->content;
    char response[5120] = { 0 };
